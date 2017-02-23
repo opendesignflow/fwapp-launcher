@@ -1,0 +1,3 @@
+indesign-config/
+.*
+**/target/*
