@@ -19,7 +19,7 @@ object FWAppLauncher extends App with FWappTreeBuilder {
   
   Brain.addExternalFolderRegion(new File("src/test/testFS/test-deploy"))
   
-  var appsBase : IWrapper = _
+  
   
   // Create App
   //----------------
