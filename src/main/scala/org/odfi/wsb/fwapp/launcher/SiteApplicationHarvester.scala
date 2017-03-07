@@ -9,45 +9,93 @@ import org.odfi.indesign.core.brain.external.FolderOutputBrainRegion
 import org.odfi.indesign.core.brain.artifact.ArtifactExternalRegion
 import org.odfi.indesign.core.brain.RegionClassName
 import org.odfi.wsb.fwapp.Site
+import org.odfi.indesign.core.harvest.Harvest
+import org.odfi.indesign.ide.core.project.ProjectsHarvester
+import org.odfi.indesign.ide.core.project.jvm.JavaOutputProject
+import org.odfi.indesign.ide.core.project.ProjectHarvesterTrait
+import org.apache.maven.project.MavenProject
+import org.odfi.indesign.core.harvest.fs.FileSystemHarvester
+import java.lang.reflect.Modifier
 
 trait SiteApplicationHarvester extends Harvester {
 
 }
 object SiteApplicationHarvester extends SiteApplicationHarvester {
 
+  //tlogEnableFull[Harvester]
+
   override def doHarvest = {
 
-    logInfo[SiteApplicationHarvester]("Site harvest")
-    Brain.getResourcesOfType[ExternalBrainRegion].foreach {
-      case region =>
-        logInfo[SiteApplicationHarvester]("Region: " + region)
-        logInfo[SiteApplicationHarvester]("RegionClasses: " + region.getResourcesOfType[RegionClassName])
+    logInfo[SiteApplicationHarvester]("Site harvest on: " + hashCode())
 
-        region.discoverRegions.foreach {
-          regionClassName =>
+    /*Harvest.collectOnHarvesters[ProjectHarvesterTrait,List[Site]] {
+      case pht => 
+        
+        List[Site]()
+    }*/ 
 
-            logInfo[SiteApplicationHarvester]("Module: " + regionClassName)
+    Harvest.collectResourcesOnHarvesters[ProjectHarvesterTrait, JavaOutputProject, List[Class[Site]]] {
+      case javaProject =>
 
-            region.loadRegionClass(regionClassName) match {
-              case ESome(appModule) if (appModule != LauncherModule && classOf[FWappApp].isInstance(appModule)) =>
-                logInfo[SiteApplicationHarvester]("Found App: " + region)
-                gather(new SiteApplication(region))
-              case other =>
-                logInfo[SiteApplicationHarvester]("Not an app " + regionClassName)
-            }
+        logInfo[SiteApplicationHarvester](s"Discovering on region: " + javaProject)
+
+        var sites = javaProject.discoverType[Site].filterNot { cl => Modifier.isAbstract(cl.getModifiers)}
+
+        sites.foreach {
+          cl =>
+            logInfo[SiteApplicationHarvester](s"Found Site canditate -> " + cl)
+            gather(new SiteApplication(javaProject, cl))
         }
+        sites
+      //List[Site]()
     }
+    logInfo[SiteApplicationHarvester]("Finished Harvest")
 
+    super.doHarvest
   }
 
 }
 
-class SiteApplication(val region: ExternalBrainRegion) extends HarvestedResource {
+class SiteApplication(val project: JavaOutputProject, val siteClass: Class[Site]) extends HarvestedResource {
+ 
 
+  def getId = "site:" + project.getId + ":" + siteClass.getCanonicalName
+
+  var site: Option[Site] = None
+
+  //-- Added 
+  this.onAdded {
+    case h if (h == SiteApplicationHarvester) =>
+
+      
+      site = Some(Brain.createRegion(siteClass.getClassLoader, siteClass.getCanonicalName).asInstanceOf[Site])
+      
+      //-- Site derives from its project to get cleaned flawlessly
+      site.get.deriveFrom(project)
+      site.get.onClean {
+        this.clean
+      }
+      
+      site.get.moveToStart
+      
+     /*.onBuildOutputChanged {
+        site.get.clean
+      }*/
+      LauncherModule.appsBase.fwappIntermediary <= site.get
+  }
+
+  //-- Clean
+  this.onClean {
+    println(s"Cleaning")
+   //site.get.clean
+    site = None
+  }
+
+  /*
   def getId = "app:" + region.getId
 
   this.deriveFrom(region)
-
+ 
   def getType = region match {
     case f: FolderOutputBrainRegion => "Folder"
     case f: ArtifactExternalRegion => "Artifact"
@@ -118,5 +166,5 @@ class SiteApplication(val region: ExternalBrainRegion) extends HarvestedResource
         }*/
 
   }
-
+*/
 }

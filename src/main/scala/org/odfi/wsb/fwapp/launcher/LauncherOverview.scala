@@ -110,19 +110,35 @@ class LauncherOverview extends FWAppFrameworkView with SemanticView with JQueryT
                         }
 
                         td("") {
-
+                          app.site  match {
+                            case Some(site) => 
+                              a(app.site.get.fullURLPath)(text(app.site.get.fullURLPath))
+                            case None => 
+                              "No Site"
+                          }
+                          
                         }
 
-                        td(app.getType) {
-
+                        td("") {
+                          
                         }
+                        /*td(app.getType) {
+
+                        }*/
                         // Action
                         td("") {
 
                           "ui button" :: button("Restart") {
                             onClickReload {
-                              app.region.reload
+                            //  app.region.reload
                               SiteApplicationHarvester.harvest
+                            }
+                          }
+                          
+                          "ui button" :: button("Stop") {
+                            onClickReload {
+                            //  app.region.reload
+                             app.site.get.moveToShutdown
                             }
                           }
 
