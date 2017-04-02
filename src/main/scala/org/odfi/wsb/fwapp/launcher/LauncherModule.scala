@@ -7,7 +7,6 @@ import org.odfi.wsb.fwapp.Site
 import org.odfi.wsb.fwapp.launcher.maven.RepositoryIntermediary
 import org.odfi.wsb.fwapp.assets.AssetsResolver
 import org.odfi.indesign.core.brain.Brain
-import org.odfi.indesign.ide.core.ui.IDEGUI
 import org.odfi.indesign.ide.core.ui.contrib.IDEGUIMenuProvider
 
 trait LauncherModule {

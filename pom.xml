@@ -67,6 +67,35 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.zenjava</groupId>
+				<artifactId>javafx-maven-plugin</artifactId>
+				<version>8.8.3</version>
+				<configuration>
+					<mainClass>com.innovationlab.ILPlatform</mainClass>
+					<verbose>true</verbose>
+					<needShortcut>true</needShortcut>
+					<needMenu>true</needMenu>
+					<appName>iLSensorsDemo</appName>
+				</configuration>
+				<executions>
+					<execution>
+						<!-- required before build-native -->
+						<id>create-jfxjar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build-jar</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>create-native</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build-native</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -112,8 +141,8 @@
 		</repository>
 		<repository>
 			<snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 			<id>odfi.snapshots</id>
 			<name>odfi-snapshot</name>
 			<url>http://www.opendesignflow.org/maven/repository/snapshots/</url>
@@ -121,9 +150,8 @@
 	</repositories>
 
 
-
 	<dependencies>
-		
+
 		<dependency>
 			<groupId>org.odfi.indesign.ide</groupId>
 			<artifactId>indesign-ide-core</artifactId>
